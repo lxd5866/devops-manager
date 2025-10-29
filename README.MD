@@ -1,4 +1,7 @@
+# DevOps Manager - 分布式运维管理系统
+
 📖 项目架构设计文档
+
 ## 1. 项目目标
 - 支持 10000+ 客户端节点 并发连接与控制
 - 实现 agent → server 长连接心跳，保证上下线可见
@@ -10,7 +13,8 @@
 - server 前端使用 tailwindcss ，后端使用 golang gin，client 使用golang 
 
 ## 2. 整体架构图（逻辑）
-```mermaid 
+
+```
 +---------------+       +------------------+       +------------------+
 |   agent 节点  | <---> |   Server         | <---> |   Web / API 接口  |
 | (1w+ 机器)     |       | (接入 & 任务分发)  |       | (UI & 管理平台)   |
@@ -26,7 +30,7 @@
 +----------------+       +------------------+
 ```
 
-## 项目结构
+## 3. 项目结构
 ```
 ├── agent/                    # Agent客户端
 │   ├── cmd/
@@ -104,8 +108,8 @@
     └── command_client_example.go         # 客户端示例
 ```
 
-## 3. 模块划分
-### 3.1 agent (Agent)
+## 4. 模块划分
+### 4.1 Agent (客户端)
 
 #### 部署在被控服务器，负责：
 1. 长连接管理：使用 WebSocket 长连接 server 端，创建web terminal 
@@ -114,13 +118,13 @@
 4. 文件传输：可支持 server 下发文件 / 上传结果文件
 
 
-### 3.2 Server (Master 控制端)
+### 4.2 Server (控制端)
 运行在中心机房或云上，负责：
 - agent 管理：使用 grpc 长连接与 agent 连接，记录节点上下线、分组、标签、资源情况
 - 任务调度：接收管理员下发的批量任务，分发给节点,统一收集 agent 执行结果，并记录
 
 
-#### 3.3 Web / API 管理端
+### 4.3 Web / API 管理端
 
 #### 提供用户交互入口：
 - 节点视图（在线 / 离线 / 标签 / 分组）
@@ -128,7 +132,7 @@
 - 历史任务查询（成功率、执行时间、日志）
 - 监控告警（心跳丢失报警）
 
-#### 3.4 数据存储层
+### 4.4 数据存储层
 - 数据库（MySQL）：存储节点信息、任务记录、日志
 - 缓存（Redis）：存储节点状态、心跳数据、任务队列
 #### 表设计（简化）：
@@ -137,12 +141,14 @@
 - task_results（任务结果表：task_id、node_id、output、status）
 
 
-### 4.1 环境依赖
+## 5. 快速开始
+
+### 5.1 环境依赖
 
 - Go 1.21+
 - MySQL 实例（在 `config.yaml` 中配置 DSN）
 
-### 4.2 运行步骤
+### 5.2 运行步骤
 
 1. 根据实际环境修改配置文件：
    - 服务端配置：`server/config/config.yaml`
@@ -189,9 +195,9 @@
    - 服务端API文档：http://localhost:8080/swagger/index.html
    - 客户端状态界面：http://localhost:8081 (启用-web参数时)
 
-## 5. Agent详细说明
+## 6. Agent详细说明
 
-### 5.1 Agent架构
+### 6.1 Agent架构
 Agent采用模块化设计，主要包含以下组件：
 
 #### 控制器层 (Controller)
@@ -216,7 +222,7 @@ Agent采用模块化设计，主要包含以下组件：
 - **file.go**: 文件操作工具（复制、MD5校验等）
 - **command.go**: 命令执行工具（跨平台shell执行）
 
-### 5.2 Agent功能特性
+### 6.2 Agent功能特性
 
 #### 主机管理
 - 自动注册到服务端
@@ -242,7 +248,7 @@ Agent采用模块化设计，主要包含以下组件：
 - 文件管理界面
 - RESTful API接口
 
-### 5.3 配置说明
+### 6.3 配置说明
 
 Agent配置文件 `agent/config/config.yaml`：
 
@@ -265,9 +271,9 @@ logging:
   format: "text"                # 日志格式
 ```
 
-## 6. Swagger API文档
+## 7. Swagger API文档
 
-### 6.1 Swagger UI 访问
+### 7.1 Swagger UI 访问
 
 系统集成了完整的Swagger API文档，提供在线测试和调试功能：
 
@@ -275,7 +281,7 @@ logging:
 - **JSON格式文档**: http://localhost:8080/swagger/doc.json
 - **YAML格式文档**: http://localhost:8080/swagger/swagger.yaml
 
-### 6.2 API接口概览
+### 7.2 API接口概览
 
 #### 主机管理 API
 | 方法 | 路径 | 描述 |
@@ -305,7 +311,7 @@ logging:
 | PUT | `/api/v1/tasks/{id}` | 更新任务信息 |
 | GET | `/api/v1/tasks/{id}/commands` | 获取任务的命令执行记录 |
 
-### 6.3 API请求示例
+### 7.3 API请求示例
 
 #### 注册主机
 ```bash
@@ -345,7 +351,7 @@ curl -X GET "http://localhost:8080/api/v1/hosts" \
      -H "accept: application/json"
 ```
 
-### 6.4 响应格式
+### 7.4 响应格式
 
 #### 成功响应
 ```json
@@ -367,7 +373,7 @@ curl -X GET "http://localhost:8080/api/v1/hosts" \
 }
 ```
 
-### 6.5 Swagger文档生成
+### 7.5 Swagger文档生成
 
 #### 安装swag工具
 ```bash
@@ -403,7 +409,7 @@ func (c *HTTPTaskController) CreateTask(ctx *gin.Context) {
 }
 ```
 
-### 6.6 在线测试
+### 7.6 在线测试
 
 1. 启动服务端后，访问 Swagger UI：http://localhost:8080/swagger/index.html
 2. 选择要测试的API接口
@@ -412,7 +418,7 @@ func (c *HTTPTaskController) CreateTask(ctx *gin.Context) {
 5. 点击 "Execute" 执行请求
 6. 查看响应结果和状态码
 
-### 6.7 开发注意事项
+### 7.7 开发注意事项
 
 1. **文档同步**: 修改API后需要重新生成Swagger文档
 2. **注释规范**: 严格按照swag注释格式编写
