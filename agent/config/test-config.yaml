@@ -1,0 +1,17 @@
+server:
+  address: "localhost:50051"
+  timeout: 15s
+  retry_interval: 3s
+
+agent:
+  report_interval: 10s  # 更频繁的上报
+  agent_id: "test-agent-001"
+  tags:
+    role: "test-agent"
+    env: "development"
+    version: "1.0.0"
+    location: "datacenter-1"
+
+logging:
+  level: "debug"
+  format: "json"

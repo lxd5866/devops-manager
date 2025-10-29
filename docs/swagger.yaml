@@ -1,0 +1,429 @@
+basePath: /api/v1
+definitions:
+  models.APIResponse:
+    properties:
+      data: {}
+      error_message:
+        example: 参数验证失败
+        type: string
+      message:
+        example: 操作成功
+        type: string
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.CreateTaskRequest:
+    properties:
+      command:
+        example: bash deploy.sh
+        type: string
+      description:
+        example: 在指定主机上执行部署脚本
+        type: string
+      host_ids:
+        example:
+        - agent-host-001
+        - agent-host-002
+        items:
+          type: string
+        type: array
+      name:
+        example: 执行脚本任务
+        type: string
+      parameters:
+        additionalProperties:
+          type: string
+        type: object
+      timeout:
+        example: 300
+        type: integer
+    required:
+    - command
+    - host_ids
+    - name
+    type: object
+  models.HostInfoResponse:
+    properties:
+      hostname:
+        example: web-server-01
+        type: string
+      id:
+        example: agent-host-001
+        type: string
+      ip:
+        example: 192.168.1.100
+        type: string
+      last_seen:
+        example: 1640995200
+        type: integer
+      os:
+        example: linux
+        type: string
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.HostListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.HostInfoResponse'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.HostRegisterRequest:
+    properties:
+      hostname:
+        example: web-server-01
+        type: string
+      ip:
+        example: 192.168.1.100
+        type: string
+      os:
+        example: linux
+        type: string
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+    required:
+    - hostname
+    type: object
+  models.PendingHostListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.PendingHostResponse'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.PendingHostResponse:
+    properties:
+      first_seen:
+        example: 1640995000
+        type: integer
+      host_id:
+        example: agent-pending-001
+        type: string
+      hostname:
+        example: new-server-01
+        type: string
+      ip:
+        example: 192.168.1.200
+        type: string
+      last_seen:
+        example: 1640995200
+        type: integer
+      os:
+        example: linux
+        type: string
+      tags:
+        additionalProperties:
+          type: string
+        type: object
+    type: object
+  models.TaskListResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/models.TaskResponse'
+        type: array
+      success:
+        example: true
+        type: boolean
+    type: object
+  models.TaskResponse:
+    properties:
+      completed_hosts:
+        example: 5
+        type: integer
+      created_at:
+        example: "2024-01-01T09:55:00Z"
+        type: string
+      created_by:
+        example: admin
+        type: string
+      description:
+        example: 部署Web应用到生产环境
+        type: string
+      failed_hosts:
+        example: 0
+        type: integer
+      id:
+        example: 1
+        type: integer
+      name:
+        example: 部署应用
+        type: string
+      status:
+        example: completed
+        type: string
+      task_id:
+        example: task-001
+        type: string
+      total_hosts:
+        example: 5
+        type: integer
+      updated_at:
+        example: "2024-01-01T10:05:00Z"
+        type: string
+    type: object
+externalDocs:
+  description: OpenAPI
+  url: https://swagger.io/resources/open-api/
+host: localhost:8080
+info:
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
+  description: DevOps Manager 分布式运维管理系统API文档，支持主机管理、任务调度、文件传输等功能
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  termsOfService: http://swagger.io/terms/
+  title: DevOps Manager API
+  version: "1.0"
+paths:
+  /hosts:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中所有已准入的主机信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.HostListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 获取主机列表
+      tags:
+      - 主机管理
+  /hosts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: 根据主机ID获取主机详细信息
+      parameters:
+      - description: 主机ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.HostInfoResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 获取主机详情
+      tags:
+      - 主机管理
+  /hosts/register:
+    post:
+      consumes:
+      - application/json
+      description: 注册一个新的主机到系统中
+      parameters:
+      - description: 主机信息
+        in: body
+        name: host
+        required: true
+        schema:
+          $ref: '#/definitions/models.HostRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 注册新主机
+      tags:
+      - 主机管理
+  /pending-hosts:
+    get:
+      consumes:
+      - application/json
+      description: 获取所有等待管理员准入的主机列表
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.PendingHostListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 获取待准入主机列表
+      tags:
+      - 主机管理
+  /pending-hosts/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: 管理员准入一个待准入的主机
+      parameters:
+      - description: 主机ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 准入主机
+      tags:
+      - 主机管理
+  /tasks:
+    get:
+      consumes:
+      - application/json
+      description: 获取系统中的任务列表，支持分页和筛选
+      parameters:
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: 每页数量
+        in: query
+        name: size
+        type: integer
+      - description: 任务状态筛选
+        in: query
+        name: status
+        type: string
+      - description: 任务名称筛选
+        in: query
+        name: name
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TaskListResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 获取任务列表
+      tags:
+      - 任务管理
+    post:
+      consumes:
+      - application/json
+      description: 创建一个新的执行任务
+      parameters:
+      - description: 任务信息
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/models.CreateTaskRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.TaskResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 创建新任务
+      tags:
+      - 任务管理
+  /tasks/{id}/commands:
+    get:
+      consumes:
+      - application/json
+      description: 获取指定任务的所有命令执行记录
+      parameters:
+      - description: 任务ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/models.APIResponse'
+      summary: 获取任务命令列表
+      tags:
+      - 任务管理
+securityDefinitions:
+  BasicAuth:
+    type: basic
+swagger: "2.0"

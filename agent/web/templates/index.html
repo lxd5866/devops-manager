@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.title}}</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/status">Status</a>
+                <a href="/tasks">Tasks</a>
+                <a href="/files">Files</a>
+            </nav>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>Welcome to DevOps Agent</h2>
+                <p>Version: {{.version}}</p>
+                <p>Status: <span class="status-{{.status}}">{{.status}}</span></p>
+            </div>
+            
+            <div class="card">
+                <h3>Quick Actions</h3>
+                <div class="actions">
+                    <a href="/status" class="btn">View Status</a>
+                    <a href="/tasks" class="btn">Manage Tasks</a>
+                    <a href="/files" class="btn">File Transfer</a>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 DevOps Manager Agent</p>
+        </footer>
+    </div>
+</body>
+</html>

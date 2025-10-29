@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.title}}</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/status">Status</a>
+                <a href="/tasks">Tasks</a>
+                <a href="/files">Files</a>
+            </nav>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>Task Management</h2>
+                <p>Total Tasks: {{.data.total}}</p>
+                
+                {{if .data.tasks}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Task ID</th>
+                            <th>Command</th>
+                            <th>Status</th>
+                            <th>Start Time</th>
+                            <th>End Time</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .data.tasks}}
+                        <tr>
+                            <td>{{.task_id}}</td>
+                            <td>{{.command}}</td>
+                            <td><span class="status-{{.status}}">{{.status}}</span></td>
+                            <td>{{.start_time}}</td>
+                            <td>{{if .end_time}}{{.end_time}}{{else}}-{{end}}</td>
+                            <td>
+                                <a href="/api/v1/task/status/{{.task_id}}" class="btn">View</a>
+                                {{if eq .status "running"}}
+                                <a href="/api/v1/task/cancel/{{.task_id}}" class="btn btn-danger">Cancel</a>
+                                {{end}}
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                <p>No tasks found.</p>
+                {{end}}
+            </div>
+            
+            <div class="card">
+                <h3>Execute New Task</h3>
+                <form action="/api/v1/task/execute" method="POST">
+                    <div class="form-group">
+                        <label for="task_id">Task ID:</label>
+                        <input type="text" id="task_id" name="task_id" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="command">Command:</label>
+                        <textarea id="command" name="command" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeout">Timeout (seconds):</label>
+                        <input type="number" id="timeout" name="timeout" value="30">
+                    </div>
+                    <button type="submit" class="btn btn-success">Execute Task</button>
+                </form>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 DevOps Manager Agent</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.title}}</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/status">Status</a>
+                <a href="/tasks">Tasks</a>
+                <a href="/files">Files</a>
+            </nav>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>File Upload</h2>
+                <form action="/api/v1/file/upload" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="file">Select File:</label>
+                        <input type="file" id="file" name="file" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Upload File</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2>Uploaded Files ({{.data.upload_count}})</h2>
+                {{if .data.upload_files}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th>Modified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .data.upload_files}}
+                        <tr>
+                            <td>{{.path}}</td>
+                            <td>{{.size}} bytes</td>
+                            <td>{{.mod_time}}</td>
+                            <td>
+                                <a href="/api/v1/file/download/{{.path}}" class="btn">Download</a>
+                                <a href="/api/v1/file/info/{{.path}}" class="btn">Info</a>
+                                <a href="/api/v1/file/{{.path}}?dir=upload" class="btn btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                <p>No uploaded files found.</p>
+                {{end}}
+            </div>
+            
+            <div class="card">
+                <h2>Download Files ({{.data.download_count}})</h2>
+                {{if .data.download_files}}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>File Name</th>
+                            <th>Size</th>
+                            <th>Modified</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .data.download_files}}
+                        <tr>
+                            <td>{{.path}}</td>
+                            <td>{{.size}} bytes</td>
+                            <td>{{.mod_time}}</td>
+                            <td>
+                                <a href="/api/v1/file/download/{{.path}}" class="btn">Download</a>
+                                <a href="/api/v1/file/info/{{.path}}" class="btn">Info</a>
+                                <a href="/api/v1/file/{{.path}}?dir=download" class="btn btn-danger">Delete</a>
+                            </td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+                {{else}}
+                <p>No download files found.</p>
+                {{end}}
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 DevOps Manager Agent</p>
+        </footer>
+    </div>
+</body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevOps 运维管理系统</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/ant-design-vue@4.0.0/dist/antd.min.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/ant-design-vue@4.0.0/dist/reset.css">
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        .header { background: #001529; color: white; padding: 16px 24px; margin-bottom: 24px; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: white; padding: 24px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .stat-value { font-size: 32px; font-weight: bold; margin-bottom: 8px; }
+        .stat-label { color: #666; font-size: 14px; }
+        .online { color: #52c41a; }
+        .offline { color: #ff4d4f; }
+        .total { color: #1890ff; }
+        .pending { color: #fa8c16; }
+        .hosts-table { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .table-header { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; font-weight: 600; }
+        .loading { text-align: center; padding: 40px; color: #666; }
+        .host-row { padding: 16px 24px; border-bottom: 1px solid #f0f0f0; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr; gap: 16px; align-items: center; }
+        .host-info { display: flex; align-items: center; gap: 12px; }
+        .host-avatar { width: 40px; height: 40px; background: #1890ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; }
+        .status-tag { padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: 500; }
+        .status-online { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        .status-offline { background: #fff2f0; color: #ff4d4f; border: 1px solid #ffccc7; }
+        .refresh-btn { background: #1890ff; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-bottom: 16px; }
+        .refresh-btn:hover { background: #40a9ff; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <div class="header">
+            <h1 style="margin: 0;">DevOps 运维管理系统</h1>
+        </div>
+        
+        <div class="container">
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value total">{{ stats.total }}</div>
+                    <div class="stat-label">总主机数</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value online">{{ stats.online }}</div>
+                    <div class="stat-label">在线主机</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value offline">{{ stats.offline }}</div>
+                    <div class="stat-label">离线主机</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value pending">{{ stats.pending }}</div>
+                    <div class="stat-label">待准入节点</div>
+                </div>
+            </div>
+
+            <div class="hosts-table">
+                <div class="table-header">
+                    <button class="refresh-btn" @click="fetchHosts" :disabled="loading">
+                        {{ loading ? '刷新中...' : '刷新数据' }}
+                    </button>
+                    主机列表
+                </div>
+                
+                <div v-if="loading" class="loading">
+                    正在加载主机数据...
+                </div>
+                
+                <div v-else-if="hosts.length === 0" class="loading">
+                    暂无主机数据
+                </div>
+                
+                <div v-else>
+                    <div class="host-row" style="font-weight: 600; background: #fafafa;">
+                        <div>主机信息</div>
+                        <div>状态</div>
+                        <div>IP地址</div>
+                        <div>操作系统</div>
+                        <div>标签数量</div>
+                        <div>最后上报</div>
+                    </div>
+                    
+                    <div v-for="host in hosts" :key="host.id" class="host-row">
+                        <div class="host-info">
+                            <div class="host-avatar">🖥️</div>
+                            <div>
+                                <div style="font-weight: 500;">{{ host.hostname }}</div>
+                                <div style="color: #666; font-size: 12px;">{{ host.id }}</div>
+                            </div>
+                        </div>
+                        <div>
+                            <span :class="['status-tag', host.status === 'online' ? 'status-online' : 'status-offline']">
+                                {{ host.status === 'online' ? '在线' : '离线' }}
+                            </span>
+                        </div>
+                        <div>{{ host.ip }}</div>
+                        <div>{{ host.os }}</div>
+                        <div>{{ host.tags ? Object.keys(host.tags).length : 0 }} 个</div>
+                        <div>{{ formatTime(host.last_seen) }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const hosts = ref([]);
+                const loading = ref(false);
+
+                const pendingCount = ref(0);
+
+                const stats = computed(() => {
+                    const total = hosts.value.length;
+                    const now = Math.floor(Date.now() / 1000);
+                    const online = hosts.value.filter(host => (now - host.last_seen) < 60).length;
+                    const offline = total - online;
+                    const pending = pendingCount.value;
+                    return { total, online, offline, pending };
+                });
+
+                const fetchHosts = async () => {
+                    loading.value = true;
+                    try {
+                        const response = await fetch('/api/v1/hosts');
+                        const data = await response.json();
+                        if (data.success) {
+                            const now = Math.floor(Date.now() / 1000);
+                            hosts.value = (data.data || []).map(host => ({
+                                ...host,
+                                status: (now - host.last_seen) < 60 ? 'online' : 'offline'
+                            }));
+                        }
+                    } catch (error) {
+                        console.error('Failed to fetch hosts:', error);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const fetchPendingCount = async () => {
+                    try {
+                        const response = await fetch('/api/v1/pending-hosts/count');
+                        const data = await response.json();
+                        if (data.success) {
+                            pendingCount.value = data.data.count;
+                        }
+                    } catch (error) {
+                        console.error('Failed to fetch pending count:', error);
+                    }
+                };
+
+                const formatTime = (timestamp) => {
+                    return new Date(timestamp * 1000).toLocaleString('zh-CN');
+                };
+
+                onMounted(() => {
+                    fetchHosts();
+                    fetchPendingCount();
+                    // 每30秒自动刷新
+                    setInterval(() => {
+                        fetchHosts();
+                        fetchPendingCount();
+                    }, 30000);
+                });
+
+                return {
+                    hosts,
+                    loading,
+                    stats,
+                    pendingCount,
+                    fetchHosts,
+                    fetchPendingCount,
+                    formatTime
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

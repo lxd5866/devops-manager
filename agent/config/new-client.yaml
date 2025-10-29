@@ -1,0 +1,17 @@
+server:
+  address: "localhost:50051"
+  timeout: 15s
+  retry_interval: 3s
+
+agent:
+  report_interval: 10s
+  agent_id: "new-test-agent-001"
+  tags:
+    role: "new-agent"
+    env: "test"
+    version: "1.0.0"
+    location: "test-lab"
+
+logging:
+  level: "debug"
+  format: "json"

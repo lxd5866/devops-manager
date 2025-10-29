@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.title}}</title>
+    <link href="/static/css/style.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{.title}}</h1>
+            <nav>
+                <a href="/">Home</a>
+                <a href="/status">Status</a>
+                <a href="/tasks">Tasks</a>
+                <a href="/files">Files</a>
+            </nav>
+        </header>
+        
+        <main>
+            <div class="card">
+                <h2>Agent Status</h2>
+                <table>
+                    <tr>
+                        <td><strong>Agent Status:</strong></td>
+                        <td><span class="status-{{.status.agent_status}}">{{.status.agent_status}}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Connected to Server:</strong></td>
+                        <td>{{if .status.connected}}Yes{{else}}No{{end}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Running Tasks:</strong></td>
+                        <td>{{.status.running_tasks}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Uptime:</strong></td>
+                        <td>{{.status.uptime}}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Last Report:</strong></td>
+                        <td>{{.status.last_report}}</td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div class="card">
+                <h3>Actions</h3>
+                <div class="actions">
+                    <a href="/api/v1/host/info" class="btn">View Host Info</a>
+                    <a href="/tasks" class="btn">Manage Tasks</a>
+                    <a href="/files" class="btn">File Transfer</a>
+                </div>
+            </div>
+        </main>
+        
+        <footer>
+            <p>&copy; 2024 DevOps Manager Agent</p>
+        </footer>
+    </div>
+</body>
+</html>

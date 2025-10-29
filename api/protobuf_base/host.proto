@@ -1,0 +1,82 @@
+syntax = "proto3";
+
+package minexus;
+
+option go_package = "devops-manager/common/protobuf;protobuf";
+
+// 主机信息
+message HostInfo {
+  string id = 1;
+  string hostname = 2;
+  string ip = 3;
+  string os = 4;
+  map<string, string> tags = 5;
+  int64 last_seen = 6;  // Unix timestamp of last registration/communication
+}
+
+// 注册应答
+message RegisterResponse {
+  bool success = 1;
+  string assigned_id = 2;
+  string error_message = 3;
+}
+
+// CPU 信息
+message CPUInfo {
+  double usage_percent = 1;        // CPU 使用率百分比
+  int32 core_count = 2;           // CPU 核心数
+  double load_avg_1m = 3;         // 1分钟平均负载
+  double load_avg_5m = 4;         // 5分钟平均负载
+  double load_avg_15m = 5;        // 15分钟平均负载
+}
+
+// 内存信息
+message MemoryInfo {
+  uint64 total_bytes = 1;         // 总内存字节数
+  uint64 used_bytes = 2;          // 已使用内存字节数
+  uint64 free_bytes = 3;          // 空闲内存字节数
+  uint64 available_bytes = 4;     // 可用内存字节数
+  double usage_percent = 5;       // 内存使用率百分比
+}
+
+// 磁盘信息
+message DiskInfo {
+  string device = 1;              // 设备名称
+  string mount_point = 2;         // 挂载点
+  string filesystem = 3;          // 文件系统类型
+  uint64 total_bytes = 4;         // 总容量字节数
+  uint64 used_bytes = 5;          // 已使用字节数
+  uint64 free_bytes = 6;          // 空闲字节数
+  double usage_percent = 7;       // 使用率百分比
+}
+
+// host 状态上报消息
+message HostStatus {
+  string host_id = 1;             // 主机ID
+  int64 timestamp = 2;            // 上报时间戳
+  int64 uptime_seconds = 3;       // 系统运行时间（秒）
+  string ip = 4;                  // IP地址
+  
+  // 系统资源信息
+  CPUInfo cpu = 5;                // CPU 信息
+  MemoryInfo memory = 6;          // 内存信息
+  repeated DiskInfo disks = 7;    // 磁盘信息列表
+  
+  // 自定义标签和元数据
+  map<string, string> custom_tags = 8;
+}
+
+// host 状态上报应答
+message HostStatusResponse {
+  bool success = 1;
+  string message = 2;
+  
+}
+
+service HostService {
+  // 主机注册（保持向后兼容）
+  rpc Register(HostInfo) returns (RegisterResponse);
+  
+  // 主机状态上报
+  rpc ReportStatus(HostStatus) returns (HostStatusResponse);
+}

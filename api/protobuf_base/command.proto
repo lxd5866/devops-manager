@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package minexus;
+
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "devops-manager/api/protobuf;protobuf";
+
+// 命令内容
+message CommandContent {
+  string command_id = 1;                         // 命令 ID
+  string host_id = 2;                            // 目标主机 ID
+  string command = 3;                            // 命令内容
+  map<string, string> parameters = 4;            // 命令参数
+  google.protobuf.Duration timeout = 5;          // 超时时间
+  google.protobuf.Timestamp created_at = 6;      // 创建时间
+}
+
+// 命令执行结果
+message CommandResult {
+  string command_id = 1;                       // 命令 ID
+  string host_id = 2;                          // 执行主机 ID
+  string stdout = 3;                           // 标准输出
+  string stderr = 4;                           // 错误输出
+  int32 exit_code = 5;                         // 退出码
+  google.protobuf.Timestamp started_at = 6;    // 开始执行时间
+  google.protobuf.Timestamp finished_at = 7;   // 完成时间
+  string error_message = 8;                    // 执行错误信息（若有）
+}
+
+// 命令消息（用于双向流通信）
+message CommandMessage {
+    CommandContent command_content = 1;        // 命令内容
+    CommandResult command_result = 2;          // 命令结果
+}
+
+// 命令服务定义
+// Server 实现 CommandService，Agent 连接到 Server 并保持长连接接收命令
+service CommandService {
+  // Agent 连接到 Server，Server 向 Agent 发送命令，Agent 返回执行结果
+  rpc ConnectForCommands(stream CommandMessage) returns (stream CommandMessage);
+}
