@@ -38,20 +38,6 @@ CREATE TABLE `tasks` (
   KEY `idx_tasks_created_by` (`created_by`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-# Task Hosts 关联表 - 任务与主机的关联
-CREATE TABLE `task_hosts` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `task_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '任务ID',
-  `host_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '主机ID',
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'pending' COMMENT '该主机在任务中的状态',
-  `created_at` datetime(3) DEFAULT NULL,
-  `updated_at` datetime(3) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_task_hosts_task_host` (`task_id`, `host_id`),
-  KEY `idx_task_hosts_task_id` (`task_id`),
-  KEY `idx_task_hosts_host_id` (`host_id`),
-  KEY `idx_task_hosts_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 # Commands 表 - 命令内容
 CREATE TABLE `commands` (
@@ -60,9 +46,8 @@ CREATE TABLE `commands` (
   `task_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '所属任务ID',
   `host_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '目标主机ID',
   `command` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '命令内容',
-  `parameters` json DEFAULT NULL COMMENT '命令参数',
+  `parameters` text  COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '命令参数',
   `timeout` bigint DEFAULT NULL COMMENT '超时时间(秒)',
-  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'pending' COMMENT '命令状态: pending, running, completed, failed, timeout, canceled',
   `stdout` longtext COLLATE utf8mb4_unicode_ci COMMENT '标准输出',
   `stderr` longtext COLLATE utf8mb4_unicode_ci COMMENT '错误输出',
   `exit_code` int DEFAULT NULL COMMENT '退出码',
@@ -81,11 +66,13 @@ CREATE TABLE `commands` (
   KEY `idx_commands_created_at` (`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-# Command Results 表 - 命令执行结果（用于存储详细的执行结果）
-CREATE TABLE `command_results` (
+
+# Task Hosts 关联表 - 任务与主机的关联
+CREATE TABLE `commands_hosts` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `command_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '命令ID',
-  `host_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '执行主机ID',
+  `host_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '主机ID',
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT '待执行' COMMENT '命令状态: 待执行,运行中,下发失败, 执行失败, 执行超时, 取消执行',
   `stdout` longtext COLLATE utf8mb4_unicode_ci COMMENT '标准输出',
   `stderr` longtext COLLATE utf8mb4_unicode_ci COMMENT '错误输出',
   `exit_code` int DEFAULT 0 COMMENT '退出码',
@@ -96,23 +83,8 @@ CREATE TABLE `command_results` (
   `created_at` datetime(3) DEFAULT NULL,
   `updated_at` datetime(3) DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `idx_command_results_command_id` (`command_id`),
-  KEY `idx_command_results_host_id` (`host_id`),
-  KEY `idx_command_results_exit_code` (`exit_code`),
-  KEY `idx_command_results_created_at` (`created_at`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-# Command Histories 表 - 命令历史记录（用于审计）
-CREATE TABLE `command_histories` (
-  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `command_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '命令ID',
-  `host_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '主机ID',
-  `action` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '操作类型',
-  `details` json DEFAULT NULL COMMENT '操作详情',
-  `created_at` datetime(3) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `idx_command_histories_command_id` (`command_id`),
-  KEY `idx_command_histories_host_id` (`host_id`),
-  KEY `idx_command_histories_action` (`action`),
-  KEY `idx_command_histories_created_at` (`created_at`)
+  UNIQUE KEY `idx_task_hosts_task_host` (`command_id`, `host_id`),
+  KEY `idx_task_hosts_task_id` (`command_id`),
+  KEY `idx_task_hosts_host_id` (`host_id`),
+  KEY `idx_task_hosts_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

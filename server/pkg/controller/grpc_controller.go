@@ -180,18 +180,6 @@ func (cs *CommandService) SendCommandToAgent(hostID string, command *protobuf.Co
 	}
 }
 
-// GetConnectedAgents 获取已连接的 Agent 列表
-func (cs *CommandService) GetConnectedAgents() []string {
-	if cs.agentStreams == nil {
-		return []string{}
-	}
-
-	agents := make([]string, 0, len(cs.agentStreams))
-	for hostID := range cs.agentStreams {
-		agents = append(agents, hostID)
-	}
-	return agents
-}
 
 // Register 实现HostServiceServer接口
 func (gc *GRPCController) Register(ctx context.Context, req *protobuf.HostInfo) (*protobuf.RegisterResponse, error) {

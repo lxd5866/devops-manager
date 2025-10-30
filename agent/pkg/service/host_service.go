@@ -32,8 +32,8 @@ func NewHostAgent(cfg *config.Config) *HostAgent {
 
 	hostInfo := &protobuf.HostInfo{
 		Id:       generateAgentID(cfg.Agent.AgentID),
-		Hostname: system.GetHostname(),
-		Ip:       system.GetLocalIP(),
+		Hostname: utils.GetHostname(),
+		Ip:       utils.GetLocalIP(),
 		Os:       runtime.GOOS,
 		Tags:     make(map[string]string),
 	}

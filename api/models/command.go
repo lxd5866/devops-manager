@@ -28,7 +28,7 @@ type Command struct {
 	TaskID     *string        `json:"task_id" gorm:"size:255;comment:所属任务ID"`
 	HostID     string         `json:"host_id" gorm:"size:255;not null;comment:目标主机ID"`
 	Command    string         `json:"command" gorm:"type:text;not null;comment:命令内容"`
-	Parameters JSON           `json:"parameters" gorm:"type:json;comment:命令参数"`
+	Parameters string         `json:"parameters" gorm:"type:text;comment:命令参数"`
 	Timeout    int64          `json:"timeout" gorm:"comment:超时时间(秒)"`
 	Status     CommandStatus  `json:"status" gorm:"size:20;default:pending;comment:命令状态"`
 	Stdout     string         `json:"stdout" gorm:"type:longtext;comment:标准输出"`

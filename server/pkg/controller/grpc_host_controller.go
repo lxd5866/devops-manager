@@ -11,6 +11,7 @@ import (
 )
 
 // GRPCHostController 主机 GRPC 控制器
+// 用于接收Agent的主机注册和状态上报请求
 type GRPCHostController struct {
 	protobuf.UnimplementedHostServiceServer
 	hostService *service.HostService
@@ -30,7 +31,8 @@ func RegisterHostGRPCService(s *grpc.Server) {
 	log.Println("Host GRPC service registered successfully")
 }
 
-// Register 主机注册
+// Register 处理Agent的主机注册请求
+// Agent调用此方法向Server注册自己
 func (gc *GRPCHostController) Register(ctx context.Context, req *protobuf.HostInfo) (*protobuf.RegisterResponse, error) {
 	LogGRPCRequest("Register", req.Hostname)
 
@@ -61,7 +63,8 @@ func (gc *GRPCHostController) Register(ctx context.Context, req *protobuf.HostIn
 	}, nil
 }
 
-// ReportStatus 处理主机状态上报
+// ReportStatus 处理Agent的主机状态上报
+// Agent定期调用此方法上报主机状态信息
 func (gc *GRPCHostController) ReportStatus(ctx context.Context, req *protobuf.HostStatus) (*protobuf.HostStatusResponse, error) {
 	LogGRPCRequest("ReportStatus", req.HostId)
 
@@ -90,14 +93,4 @@ func (gc *GRPCHostController) ReportStatus(ctx context.Context, req *protobuf.Ho
 		Success: true,
 		Message: "Status report received successfully",
 	}, nil
-}
-
-// GetHost 获取主机信息（辅助方法）
-func (gc *GRPCHostController) GetHost(id string) (*protobuf.HostInfo, bool) {
-	return gc.hostService.GetHost(id)
-}
-
-// GetAllHosts 获取所有主机信息（辅助方法）
-func (gc *GRPCHostController) GetAllHosts() []*protobuf.HostInfo {
-	return gc.hostService.GetAllHosts()
 }
