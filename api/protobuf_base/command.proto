@@ -12,7 +12,7 @@ message CommandContent {
   string command_id = 1;                         // 命令 ID
   string host_id = 2;                            // 目标主机 ID
   string command = 3;                            // 命令内容
-  map<string, string> parameters = 4;            // 命令参数
+  string parameters = 4;                         // 命令参数
   google.protobuf.Duration timeout = 5;          // 超时时间
   google.protobuf.Timestamp created_at = 6;      // 创建时间
 }

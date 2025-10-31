@@ -26,12 +26,12 @@ const (
 // 命令内容
 type CommandContent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	CommandId     string                 `protobuf:"bytes,1,opt,name=command_id,json=commandId,proto3" json:"command_id,omitempty"`                                                            // 命令 ID
-	HostId        string                 `protobuf:"bytes,2,opt,name=host_id,json=hostId,proto3" json:"host_id,omitempty"`                                                                     // 目标主机 ID
-	Command       string                 `protobuf:"bytes,3,opt,name=command,proto3" json:"command,omitempty"`                                                                                 // 命令内容
-	Parameters    map[string]string      `protobuf:"bytes,4,rep,name=parameters,proto3" json:"parameters,omitempty" protobuf_key:"bytes,1,opt,name=key" protobuf_val:"bytes,2,opt,name=value"` // 命令参数
-	Timeout       *durationpb.Duration   `protobuf:"bytes,5,opt,name=timeout,proto3" json:"timeout,omitempty"`                                                                                 // 超时时间
-	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`                                                            // 创建时间
+	CommandId     string                 `protobuf:"bytes,1,opt,name=command_id,json=commandId,proto3" json:"command_id,omitempty"` // 命令 ID
+	HostId        string                 `protobuf:"bytes,2,opt,name=host_id,json=hostId,proto3" json:"host_id,omitempty"`          // 目标主机 ID
+	Command       string                 `protobuf:"bytes,3,opt,name=command,proto3" json:"command,omitempty"`                      // 命令内容
+	Parameters    string                 `protobuf:"bytes,4,opt,name=parameters,proto3" json:"parameters,omitempty"`                // 命令参数
+	Timeout       *durationpb.Duration   `protobuf:"bytes,5,opt,name=timeout,proto3" json:"timeout,omitempty"`                      // 超时时间
+	CreatedAt     *timestamppb.Timestamp `protobuf:"bytes,6,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"` // 创建时间
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -87,11 +87,11 @@ func (x *CommandContent) GetCommand() string {
 	return ""
 }
 
-func (x *CommandContent) GetParameters() map[string]string {
+func (x *CommandContent) GetParameters() string {
 	if x != nil {
 		return x.Parameters
 	}
-	return nil
+	return ""
 }
 
 func (x *CommandContent) GetTimeout() *durationpb.Duration {
@@ -266,21 +266,18 @@ var File_command_proto protoreflect.FileDescriptor
 
 const file_command_proto_rawDesc = "" +
 	"\n" +
-	"\rcommand.proto\x12\aminexus\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xda\x02\n" +
+	"\rcommand.proto\x12\aminexus\x1a\x1egoogle/protobuf/duration.proto\x1a\x1fgoogle/protobuf/timestamp.proto\"\xf2\x01\n" +
 	"\x0eCommandContent\x12\x1d\n" +
 	"\n" +
 	"command_id\x18\x01 \x01(\tR\tcommandId\x12\x17\n" +
 	"\ahost_id\x18\x02 \x01(\tR\x06hostId\x12\x18\n" +
-	"\acommand\x18\x03 \x01(\tR\acommand\x12G\n" +
+	"\acommand\x18\x03 \x01(\tR\acommand\x12\x1e\n" +
 	"\n" +
-	"parameters\x18\x04 \x03(\v2'.minexus.CommandContent.ParametersEntryR\n" +
+	"parameters\x18\x04 \x01(\tR\n" +
 	"parameters\x123\n" +
 	"\atimeout\x18\x05 \x01(\v2\x19.google.protobuf.DurationR\atimeout\x129\n" +
 	"\n" +
-	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x1a=\n" +
-	"\x0fParametersEntry\x12\x10\n" +
-	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x01\"\xb1\x02\n" +
+	"created_at\x18\x06 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"\xb1\x02\n" +
 	"\rCommandResult\x12\x1d\n" +
 	"\n" +
 	"command_id\x18\x01 \x01(\tR\tcommandId\x12\x17\n" +
@@ -311,30 +308,28 @@ func file_command_proto_rawDescGZIP() []byte {
 	return file_command_proto_rawDescData
 }
 
-var file_command_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
+var file_command_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
 var file_command_proto_goTypes = []any{
 	(*CommandContent)(nil),        // 0: minexus.CommandContent
 	(*CommandResult)(nil),         // 1: minexus.CommandResult
 	(*CommandMessage)(nil),        // 2: minexus.CommandMessage
-	nil,                           // 3: minexus.CommandContent.ParametersEntry
-	(*durationpb.Duration)(nil),   // 4: google.protobuf.Duration
-	(*timestamppb.Timestamp)(nil), // 5: google.protobuf.Timestamp
+	(*durationpb.Duration)(nil),   // 3: google.protobuf.Duration
+	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
 }
 var file_command_proto_depIdxs = []int32{
-	3, // 0: minexus.CommandContent.parameters:type_name -> minexus.CommandContent.ParametersEntry
-	4, // 1: minexus.CommandContent.timeout:type_name -> google.protobuf.Duration
-	5, // 2: minexus.CommandContent.created_at:type_name -> google.protobuf.Timestamp
-	5, // 3: minexus.CommandResult.started_at:type_name -> google.protobuf.Timestamp
-	5, // 4: minexus.CommandResult.finished_at:type_name -> google.protobuf.Timestamp
-	0, // 5: minexus.CommandMessage.command_content:type_name -> minexus.CommandContent
-	1, // 6: minexus.CommandMessage.command_result:type_name -> minexus.CommandResult
-	2, // 7: minexus.CommandService.ConnectForCommands:input_type -> minexus.CommandMessage
-	2, // 8: minexus.CommandService.ConnectForCommands:output_type -> minexus.CommandMessage
-	8, // [8:9] is the sub-list for method output_type
-	7, // [7:8] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	3, // 0: minexus.CommandContent.timeout:type_name -> google.protobuf.Duration
+	4, // 1: minexus.CommandContent.created_at:type_name -> google.protobuf.Timestamp
+	4, // 2: minexus.CommandResult.started_at:type_name -> google.protobuf.Timestamp
+	4, // 3: minexus.CommandResult.finished_at:type_name -> google.protobuf.Timestamp
+	0, // 4: minexus.CommandMessage.command_content:type_name -> minexus.CommandContent
+	1, // 5: minexus.CommandMessage.command_result:type_name -> minexus.CommandResult
+	2, // 6: minexus.CommandService.ConnectForCommands:input_type -> minexus.CommandMessage
+	2, // 7: minexus.CommandService.ConnectForCommands:output_type -> minexus.CommandMessage
+	7, // [7:8] is the sub-list for method output_type
+	6, // [6:7] is the sub-list for method input_type
+	6, // [6:6] is the sub-list for extension type_name
+	6, // [6:6] is the sub-list for extension extendee
+	0, // [0:6] is the sub-list for field type_name
 }
 
 func init() { file_command_proto_init() }
@@ -348,7 +343,7 @@ func file_command_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_command_proto_rawDesc), len(file_command_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   4,
+			NumMessages:   3,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

@@ -341,9 +341,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks/{id}/commands": {
+        "/tasks/{id}": {
             "get": {
-                "description": "获取指定任务的所有命令执行记录",
+                "description": "根据任务ID获取任务详细信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -353,7 +353,7 @@ const docTemplate = `{
                 "tags": [
                     "任务管理"
                 ],
-                "summary": "获取任务命令列表",
+                "summary": "获取任务详情",
                 "parameters": [
                     {
                         "type": "string",
@@ -367,7 +367,19 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.APIResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/models.APIResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/models.TaskResponse"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "404": {
@@ -436,10 +448,7 @@ const docTemplate = `{
                     "example": "执行脚本任务"
                 },
                 "parameters": {
-                    "type": "object",
-                    "additionalProperties": {
-                        "type": "string"
-                    }
+                    "type": "string"
                 },
                 "timeout": {
                     "type": "integer",

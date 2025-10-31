@@ -64,12 +64,12 @@ type TaskListResponse struct {
 
 // CreateTaskRequest 创建任务请求
 type CreateTaskRequest struct {
-	Name        string            `json:"name" example:"执行脚本任务" binding:"required"`
-	Description string            `json:"description" example:"在指定主机上执行部署脚本"`
-	HostIDs     []string          `json:"host_ids" example:"agent-host-001,agent-host-002" binding:"required"`
-	Command     string            `json:"command" example:"bash deploy.sh" binding:"required"`
-	Timeout     int               `json:"timeout" example:"300"`
-	Parameters  map[string]string `json:"parameters"`
+	Name        string   `json:"name" example:"执行脚本任务" binding:"required"`
+	Description string   `json:"description" example:"在指定主机上执行部署脚本"`
+	HostIDs     []string `json:"host_ids" example:"agent-host-001,agent-host-002" binding:"required"`
+	Command     string   `json:"command" example:"bash deploy.sh" binding:"required"`
+	Timeout     int      `json:"timeout" example:"300"`
+	Parameters  string   `json:"parameters"`
 }
 
 // HostRegisterRequest 主机注册请求

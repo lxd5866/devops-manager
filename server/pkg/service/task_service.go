@@ -37,13 +37,11 @@ func (ts *TaskService) CreateTask(name, description string, hostIDs []string, co
 	ts.tasksMutex.Lock()
 	defer ts.tasksMutex.Unlock()
 
-
 	// 生成任务ID
 	taskID := "task-" + uuid.New().String()
 
-
 	// 1.开启mysql 事务
-	// 使用 command  timeout parameters  创建  
+	// 使用 command  timeout parameters  创建
 
 	// 创建任务
 	task := &models.Task{
@@ -57,15 +55,9 @@ func (ts *TaskService) CreateTask(name, description string, hostIDs []string, co
 		UpdatedAt:   time.Now(),
 	}
 
-	// 创建任务主机关联
-	for _, hostID := range hostIDs {
-		taskHost := models.TaskHost{
-			TaskID: taskID,
-			HostID: hostID,
-			Status: models.TaskStatusPending,
-		}
-		task.TaskHosts = append(task.TaskHosts, taskHost)
-	}
+	// 设置任务主机数量
+	task.TotalHosts = len(hostIDs)
+	// 注意：现在主机关联通过 Command 和 CommandHost 来管理
 
 	// 存储任务到内存映射表中
 	ts.tasks[taskID] = task
@@ -273,11 +265,14 @@ func (ts *TaskService) GetTaskProgress(taskID string) (map[string]interface{}, e
 func (ts *TaskService) getHostProgress(task *models.Task) []map[string]interface{} {
 	var hostProgress []map[string]interface{}
 
-	for _, taskHost := range task.TaskHosts {
-		hostProgress = append(hostProgress, map[string]interface{}{
-			"host_id": taskHost.HostID,
-			"status":  taskHost.Status,
-		})
+	// 通过 Commands 和 CommandHosts 获取主机进度
+	for _, cmd := range task.Commands {
+		for _, cmdHost := range cmd.CommandHosts {
+			hostProgress = append(hostProgress, map[string]interface{}{
+				"host_id": cmdHost.HostID,
+				"status":  cmdHost.Status,
+			})
+		}
 	}
 
 	return hostProgress
@@ -300,17 +295,8 @@ func (ts *TaskService) AddTaskHosts(taskID string, hostIDs []string) error {
 		return fmt.Errorf("cannot add hosts to running task: %s", taskID)
 	}
 
-	// 添加新主机
-	for _, hostID := range hostIDs {
-		taskHost := models.TaskHost{
-			TaskID: taskID,
-			HostID: hostID,
-			Status: models.TaskStatusPending,
-		}
-		task.TaskHosts = append(task.TaskHosts, taskHost)
-	}
-
-	task.TotalHosts = len(task.TaskHosts)
+	// 更新主机总数（现在主机关联通过 Command 和 CommandHost 管理）
+	task.TotalHosts += len(hostIDs)
 	task.UpdatedAt = time.Now()
 
 	log.Printf("Added %d hosts to task: %s", len(hostIDs), taskID)
@@ -331,24 +317,18 @@ func (ts *TaskService) RemoveTaskHost(taskID, hostID string) error {
 		return fmt.Errorf("cannot remove host from running task: %s", taskID)
 	}
 
-	// 移除主机
-	var newTaskHosts []models.TaskHost
-	for _, taskHost := range task.TaskHosts {
-		if taskHost.HostID != hostID {
-			newTaskHosts = append(newTaskHosts, taskHost)
-		}
+	// 减少主机总数（现在主机关联通过 Command 和 CommandHost 管理）
+	if task.TotalHosts > 0 {
+		task.TotalHosts--
 	}
-
-	task.TaskHosts = newTaskHosts
-	task.TotalHosts = len(task.TaskHosts)
 	task.UpdatedAt = time.Now()
 
 	log.Printf("Removed host %s from task: %s", hostID, taskID)
 	return nil
 }
 
-// GetTaskHosts 获取任务主机列表
-func (ts *TaskService) GetTaskHosts(taskID string) ([]models.TaskHost, error) {
+// GetTaskHosts 获取任务主机列表（通过 CommandHost 获取）
+func (ts *TaskService) GetTaskHosts(taskID string) ([]models.CommandHost, error) {
 	ts.tasksMutex.RLock()
 	defer ts.tasksMutex.RUnlock()
 
@@ -357,7 +337,12 @@ func (ts *TaskService) GetTaskHosts(taskID string) ([]models.TaskHost, error) {
 		return nil, fmt.Errorf("task not found: %s", taskID)
 	}
 
-	return task.TaskHosts, nil
+	var commandHosts []models.CommandHost
+	for _, cmd := range task.Commands {
+		commandHosts = append(commandHosts, cmd.CommandHosts...)
+	}
+
+	return commandHosts, nil
 }
 
 // GetTaskCommands 获取任务命令列表

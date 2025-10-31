@@ -35,32 +35,12 @@ type Task struct {
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
 
 	// 关联关系
-	TaskHosts []TaskHost `json:"task_hosts" gorm:"foreignKey:TaskID;references:TaskID"`
-	Commands  []Command  `json:"commands" gorm:"foreignKey:TaskID;references:TaskID"`
+	Commands []Command `json:"commands" gorm:"foreignKey:TaskID;references:TaskID"`
 }
 
 // TableName 指定表名
 func (Task) TableName() string {
 	return "tasks"
-}
-
-// TaskHost 任务主机关联模型
-type TaskHost struct {
-	ID        uint       `json:"id" gorm:"primaryKey"`
-	TaskID    string     `json:"task_id" gorm:"size:255;not null;comment:任务ID"`
-	HostID    string     `json:"host_id" gorm:"size:255;not null;comment:主机ID"`
-	Status    TaskStatus `json:"status" gorm:"size:20;default:pending;comment:该主机在任务中的状态"`
-	CreatedAt time.Time  `json:"created_at"`
-	UpdatedAt time.Time  `json:"updated_at"`
-
-	// 关联关系
-	Task *Task `json:"task,omitempty" gorm:"foreignKey:TaskID;references:TaskID"`
-	Host *Host `json:"host,omitempty" gorm:"foreignKey:HostID;references:HostID"`
-}
-
-// TableName 指定表名
-func (TaskHost) TableName() string {
-	return "task_hosts"
 }
 
 // TaskBuilder 任务构建器
@@ -95,18 +75,9 @@ func (tb *TaskBuilder) WithCreatedBy(creator string) *TaskBuilder {
 	return tb
 }
 
-// WithHosts 添加主机列表
+// WithHosts 设置主机数量
 func (tb *TaskBuilder) WithHosts(hostIDs []string) *TaskBuilder {
 	tb.task.TotalHosts = len(hostIDs)
-	tb.task.TaskHosts = make([]TaskHost, len(hostIDs))
-
-	for i, hostID := range hostIDs {
-		tb.task.TaskHosts[i] = TaskHost{
-			TaskID: tb.task.TaskID,
-			HostID: hostID,
-			Status: TaskStatusPending,
-		}
-	}
 	return tb
 }
 
@@ -152,19 +123,23 @@ func (t *Task) SuccessRate() float64 {
 }
 
 // UpdateProgress 更新任务进度
+// 现在基于 Commands 和 CommandHosts 来计算进度
 func (t *Task) UpdateProgress() {
 	completedCount := 0
 	failedCount := 0
 	runningCount := 0
 
-	for _, th := range t.TaskHosts {
-		switch th.Status {
-		case TaskStatusCompleted:
-			completedCount++
-		case TaskStatusFailed:
-			failedCount++
-		case TaskStatusRunning:
-			runningCount++
+	// 通过 Commands 和其关联的 CommandHosts 来计算进度
+	for _, cmd := range t.Commands {
+		for _, ch := range cmd.CommandHosts {
+			switch ch.Status {
+			case string(CommandHostStatusCompleted):
+				completedCount++
+			case string(CommandHostStatusFailed), string(CommandHostStatusExecFailed), string(CommandHostStatusTimeout):
+				failedCount++
+			case string(CommandHostStatusRunning):
+				runningCount++
+			}
 		}
 	}
 

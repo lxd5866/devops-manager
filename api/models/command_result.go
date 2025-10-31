@@ -100,3 +100,50 @@ func CreateCommandResultFromProtobuf(result *protobuf.CommandResult) *CommandRes
 	cr.FromProtobuf(result)
 	return cr
 }
+
+// ToCommandHost 转换为 CommandHost 模型
+func (cr *CommandResult) ToCommandHost() *CommandHost {
+	ch := &CommandHost{
+		CommandID:     cr.CommandID,
+		HostID:        cr.HostID,
+		Stdout:        cr.Stdout,
+		Stderr:        cr.Stderr,
+		ExitCode:      int(cr.ExitCode),
+		StartedAt:     cr.StartedAt,
+		FinishedAt:    cr.FinishedAt,
+		ErrorMessage:  cr.ErrorMessage,
+		ExecutionTime: cr.ExecutionTime,
+		CreatedAt:     cr.CreatedAt,
+		UpdatedAt:     cr.UpdatedAt,
+	}
+
+	// 根据退出码设置状态
+	if cr.FinishedAt != nil {
+		if cr.ExitCode == 0 {
+			ch.Status = string(CommandHostStatusCompleted)
+		} else {
+			ch.Status = string(CommandHostStatusExecFailed)
+		}
+	} else if cr.StartedAt != nil {
+		ch.Status = string(CommandHostStatusRunning)
+	} else {
+		ch.Status = string(CommandHostStatusPending)
+	}
+
+	return ch
+}
+
+// FromCommandHost 从 CommandHost 模型创建
+func (cr *CommandResult) FromCommandHost(ch *CommandHost) {
+	cr.CommandID = ch.CommandID
+	cr.HostID = ch.HostID
+	cr.Stdout = ch.Stdout
+	cr.Stderr = ch.Stderr
+	cr.ExitCode = int32(ch.ExitCode)
+	cr.StartedAt = ch.StartedAt
+	cr.FinishedAt = ch.FinishedAt
+	cr.ErrorMessage = ch.ErrorMessage
+	cr.ExecutionTime = ch.ExecutionTime
+	cr.CreatedAt = ch.CreatedAt
+	cr.UpdatedAt = ch.UpdatedAt
+}

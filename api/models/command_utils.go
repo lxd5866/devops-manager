@@ -45,7 +45,7 @@ func NewCommandBuilder() *CommandBuilder {
 		command: &Command{
 			CommandID:  generateCommandID(),
 			Status:     CommandStatusPending,
-			Parameters: make(JSON),
+			Parameters: "",
 		},
 	}
 }
@@ -68,16 +68,33 @@ func (cb *CommandBuilder) WithCommand(cmd string) *CommandBuilder {
 	return cb
 }
 
-// WithParameter 添加命令参数
+// WithParameter 设置命令参数（简单字符串格式）
 func (cb *CommandBuilder) WithParameter(key, value string) *CommandBuilder {
-	cb.command.Parameters[key] = value
+	if cb.command.Parameters == "" {
+		cb.command.Parameters = fmt.Sprintf("%s=%s", key, value)
+	} else {
+		cb.command.Parameters += fmt.Sprintf(" %s=%s", key, value)
+	}
 	return cb
 }
 
 // WithParameters 批量设置命令参数
 func (cb *CommandBuilder) WithParameters(params map[string]string) *CommandBuilder {
+	var paramPairs []string
 	for k, v := range params {
-		cb.command.Parameters[k] = v
+		paramPairs = append(paramPairs, fmt.Sprintf("%s=%s", k, v))
+	}
+	if len(paramPairs) > 0 {
+		if cb.command.Parameters == "" {
+			cb.command.Parameters = fmt.Sprintf("%s", paramPairs[0])
+			for i := 1; i < len(paramPairs); i++ {
+				cb.command.Parameters += fmt.Sprintf(" %s", paramPairs[i])
+			}
+		} else {
+			for _, pair := range paramPairs {
+				cb.command.Parameters += fmt.Sprintf(" %s", pair)
+			}
+		}
 	}
 	return cb
 }
@@ -130,7 +147,7 @@ func (f *CommandFactory) CreateSimpleCommand(hostID, command string) *protobuf.C
 		CommandId:  generateCommandID(),
 		HostId:     hostID,
 		Command:    command,
-		Parameters: make(map[string]string),
+		Parameters: "",                               // 现在是 string 类型
 		Timeout:    durationpb.New(30 * time.Second), // 默认30秒超时
 		CreatedAt:  timestamppb.Now(),
 	}
@@ -138,11 +155,24 @@ func (f *CommandFactory) CreateSimpleCommand(hostID, command string) *protobuf.C
 
 // CreateCommandWithParams 创建带参数的命令
 func (f *CommandFactory) CreateCommandWithParams(hostID, command string, params map[string]string, timeoutSeconds int64) *protobuf.CommandContent {
+	// 将 map 转换为字符串格式
+	var paramPairs []string
+	for k, v := range params {
+		paramPairs = append(paramPairs, fmt.Sprintf("%s=%s", k, v))
+	}
+	paramString := ""
+	if len(paramPairs) > 0 {
+		paramString = paramPairs[0]
+		for i := 1; i < len(paramPairs); i++ {
+			paramString += fmt.Sprintf(" %s", paramPairs[i])
+		}
+	}
+
 	return &protobuf.CommandContent{
 		CommandId:  generateCommandID(),
 		HostId:     hostID,
 		Command:    command,
-		Parameters: params,
+		Parameters: paramString, // 现在是 string 类型
 		Timeout:    durationpb.New(time.Duration(timeoutSeconds) * time.Second),
 		CreatedAt:  timestamppb.Now(),
 	}

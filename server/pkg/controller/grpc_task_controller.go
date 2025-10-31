@@ -86,7 +86,7 @@ func (tc *GRPCTaskController) SendCommandToAgent(agentID, commandID, command str
 			CommandId:  commandID,
 			HostId:     agentID,
 			Command:    command,
-			Parameters: make(map[string]string),
+			Parameters: "",  // 现在是 string 类型
 			Timeout:    nil, // 可以根据需要设置超时
 			CreatedAt:  timestamppb.Now(),
 		},

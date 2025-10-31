@@ -45,6 +45,7 @@ type Command struct {
 	Task          *Task          `json:"task,omitempty" gorm:"foreignKey:TaskID;references:TaskID"`
 	Host          *Host          `json:"host,omitempty" gorm:"foreignKey:HostID;references:HostID"`
 	CommandResult *CommandResult `json:"command_result,omitempty" gorm:"foreignKey:CommandID;references:CommandID"`
+	CommandHosts  []CommandHost  `json:"command_hosts,omitempty" gorm:"foreignKey:CommandID;references:CommandID"`
 }
 
 // TableName 指定表名
@@ -54,14 +55,6 @@ func (Command) TableName() string {
 
 // ToProtobufContent 转换为 protobuf CommandContent 格式
 func (c *Command) ToProtobufContent() *protobuf.CommandContent {
-	// 转换参数
-	params := make(map[string]string)
-	for k, v := range c.Parameters {
-		if str, ok := v.(string); ok {
-			params[k] = str
-		}
-	}
-
 	// 转换超时时间
 	var timeout *durationpb.Duration
 	if c.Timeout > 0 {
@@ -72,7 +65,7 @@ func (c *Command) ToProtobufContent() *protobuf.CommandContent {
 		CommandId:  c.CommandID,
 		HostId:     c.HostID,
 		Command:    c.Command,
-		Parameters: params,
+		Parameters: c.Parameters, // 现在直接使用 string 类型
 		Timeout:    timeout,
 		CreatedAt:  timestamppb.New(c.CreatedAt),
 	}
@@ -110,13 +103,8 @@ func (c *Command) FromProtobufContent(content *protobuf.CommandContent) {
 	c.Command = content.Command
 	c.Status = CommandStatusPending
 
-	// 转换参数
-	if content.Parameters != nil {
-		c.Parameters = make(JSON)
-		for k, v := range content.Parameters {
-			c.Parameters[k] = v
-		}
-	}
+	// 直接使用 string 类型的参数
+	c.Parameters = content.Parameters
 
 	// 转换超时时间
 	if content.Timeout != nil {

@@ -32,9 +32,7 @@ definitions:
         example: 执行脚本任务
         type: string
       parameters:
-        additionalProperties:
-          type: string
-        type: object
+        type: string
       timeout:
         example: 300
         type: integer
@@ -394,11 +392,11 @@ paths:
       summary: 创建新任务
       tags:
       - 任务管理
-  /tasks/{id}/commands:
+  /tasks/{id}:
     get:
       consumes:
       - application/json
-      description: 获取指定任务的所有命令执行记录
+      description: 根据任务ID获取任务详细信息
       parameters:
       - description: 任务ID
         in: path
@@ -411,7 +409,12 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.APIResponse'
+            allOf:
+            - $ref: '#/definitions/models.APIResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/models.TaskResponse'
+              type: object
         "404":
           description: Not Found
           schema:
@@ -420,7 +423,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/models.APIResponse'
-      summary: 获取任务命令列表
+      summary: 获取任务详情
       tags:
       - 任务管理
 securityDefinitions:
