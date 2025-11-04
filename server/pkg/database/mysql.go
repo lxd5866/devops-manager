@@ -81,8 +81,15 @@ func InitMySQL(cfg *config.MySQLConfig) error {
 
 // autoMigrate 自动迁移数据库表
 func autoMigrate() error {
+	// 导入 service 包以访问审计相关的模型
+	// 注意：这里需要在文件顶部添加导入
 	return DB.AutoMigrate(
 		&models.Host{},
+		&models.Task{},
+		&models.Command{},
+		&models.CommandHost{},
+		&models.CommandResult{},
+		// 审计和日志相关表将在 TaskService 初始化时创建
 	)
 }
 

@@ -1,0 +1,25 @@
+http:
+  address: ":8080"
+  
+grpc:
+  address: ":50051"
+
+mysql:
+  host: "127.0.0.1"
+  port: 3307
+  user: "root"
+  password: "123456"
+  dbname: "devops_manager"
+  charset: "utf8mb4"
+  parse_time: true
+  loc: "Local"
+
+redis:
+  host: "127.0.0.1"
+  port: 6380
+  password: ""
+  db: 0
+  
+logging:
+  level: "info"
+  format: "json"

@@ -21,5 +21,17 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true
+  },
+  optimizeDeps: {
+    include: [
+      'vue',
+      'vue-router',
+      'pinia',
+      'ant-design-vue',
+      'axios',
+      '@ant-design/icons-vue',
+      'dayjs'
+    ],
+    force: true
   }
 })

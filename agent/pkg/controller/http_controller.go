@@ -29,9 +29,6 @@ func (hc *HTTPController) RegisterRoutes() {
 	// 注册任务相关路由
 	RegisterTaskHTTPRoutes(hc.router)
 
-	// 注册文件相关路由
-	RegisterFileHTTPRoutes(hc.router)
-
 	// 注册Web页面路由
 	RegisterWebRoutes(hc.router)
 
@@ -72,22 +69,6 @@ func RegisterTaskHTTPRoutes(r *gin.Engine) {
 	log.Println("Task HTTP routes registered")
 }
 
-// RegisterFileHTTPRoutes 注册文件HTTP路由
-func RegisterFileHTTPRoutes(r *gin.Engine) {
-	fileController := NewFileHTTPController()
-
-	api := r.Group("/api/v1")
-	{
-		api.POST("/file/upload", fileController.UploadFile)
-		api.GET("/file/download/:name", fileController.DownloadFile)
-		api.GET("/file/list", fileController.ListFiles)
-		api.DELETE("/file/:name", fileController.DeleteFile)
-		api.GET("/file/info/:name", fileController.GetFileInfo)
-	}
-
-	log.Println("File HTTP routes registered")
-}
-
 // RegisterWebRoutes 注册Web页面路由
 func RegisterWebRoutes(r *gin.Engine) {
 	webController := NewWebController()
@@ -100,7 +81,6 @@ func RegisterWebRoutes(r *gin.Engine) {
 	r.GET("/", webController.Index)
 	r.GET("/status", webController.Status)
 	r.GET("/tasks", webController.Tasks)
-	r.GET("/files", webController.Files)
 
 	log.Println("Web routes registered")
 }

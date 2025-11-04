@@ -34,8 +34,8 @@ type Task struct {
 	UpdatedAt      time.Time      `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`
 
-	// 关联关系
-	Commands []Command `json:"commands" gorm:"foreignKey:TaskID;references:TaskID"`
+	// 关联关系 - 不设置外键约束，避免迁移问题
+	Commands []Command `json:"commands" gorm:"-"`
 }
 
 // TableName 指定表名

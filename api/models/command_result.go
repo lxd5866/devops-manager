@@ -22,9 +22,9 @@ type CommandResult struct {
 	CreatedAt     time.Time  `json:"created_at"`
 	UpdatedAt     time.Time  `json:"updated_at"`
 
-	// 关联关系
-	Command *Command `json:"command,omitempty" gorm:"foreignKey:CommandID;references:CommandID"`
-	Host    *Host    `json:"host,omitempty" gorm:"foreignKey:HostID;references:HostID"`
+	// 关联关系 - 不设置外键约束，避免迁移问题
+	Command *Command `json:"command,omitempty" gorm:"-"`
+	Host    *Host    `json:"host,omitempty" gorm:"-"`
 }
 
 // TableName 指定表名

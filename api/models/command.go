@@ -41,11 +41,11 @@ type Command struct {
 	UpdatedAt  time.Time      `json:"updated_at"`
 	DeletedAt  gorm.DeletedAt `json:"-" gorm:"index"`
 
-	// 关联关系
-	Task          *Task          `json:"task,omitempty" gorm:"foreignKey:TaskID;references:TaskID"`
-	Host          *Host          `json:"host,omitempty" gorm:"foreignKey:HostID;references:HostID"`
-	CommandResult *CommandResult `json:"command_result,omitempty" gorm:"foreignKey:CommandID;references:CommandID"`
-	CommandHosts  []CommandHost  `json:"command_hosts,omitempty" gorm:"foreignKey:CommandID;references:CommandID"`
+	// 关联关系 - 不设置外键约束，避免迁移问题
+	Task          *Task          `json:"task,omitempty" gorm:"-"`
+	Host          *Host          `json:"host,omitempty" gorm:"-"`
+	CommandResult *CommandResult `json:"command_result,omitempty" gorm:"-"`
+	CommandHosts  []CommandHost  `json:"command_hosts,omitempty" gorm:"-"`
 }
 
 // TableName 指定表名

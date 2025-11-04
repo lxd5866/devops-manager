@@ -12,14 +12,12 @@ import (
 type WebController struct {
 	hostService *service.HostAgent
 	taskService *service.TaskService
-	fileService *service.FileService
 }
 
 // NewWebController 创建Web控制器
 func NewWebController() *WebController {
 	return &WebController{
 		taskService: service.NewTaskService(),
-		fileService: service.NewFileService("./uploads", "./downloads"),
 	}
 }
 
@@ -111,31 +109,6 @@ func (wc *WebController) Tasks(c *gin.Context) {
 	} else {
 		c.HTML(http.StatusOK, "tasks.html", gin.H{
 			"title": "Task Management",
-			"data":  data,
-		})
-	}
-}
-
-// Files 文件页面
-func (wc *WebController) Files(c *gin.Context) {
-	LogHTTPRequest(c)
-
-	// 获取上传文件列表
-	uploadFiles, _ := wc.fileService.ListFiles("upload")
-	downloadFiles, _ := wc.fileService.ListFiles("download")
-
-	data := gin.H{
-		"upload_files":   uploadFiles,
-		"download_files": downloadFiles,
-		"upload_count":   len(uploadFiles),
-		"download_count": len(downloadFiles),
-	}
-
-	if c.Request.Header.Get("Accept") == "application/json" {
-		SuccessResponse(c, data)
-	} else {
-		c.HTML(http.StatusOK, "files.html", gin.H{
-			"title": "File Management",
 			"data":  data,
 		})
 	}

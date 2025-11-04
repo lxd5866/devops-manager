@@ -5,7 +5,6 @@ import (
 	"net"
 	"sync"
 
-	"devops-manager/api/protobuf"
 	"devops-manager/server/pkg/config"
 	"devops-manager/server/pkg/controller"
 	"devops-manager/server/pkg/database"
@@ -84,8 +83,12 @@ func startGRPCServer(cfg *config.Config) {
 	}
 
 	s := grpc.NewServer()
-	grpcController := controller.NewGRPCController()
-	protobuf.RegisterHostServiceServer(s, grpcController)
+
+	// 注册所有 gRPC 服务并获取任务控制器
+	taskController := controller.RegisterGRPCServices(s)
+
+	// 设置任务分发器，建立 TaskService 和 gRPC 控制器的连接
+	controller.SetupTaskDispatcher(taskController)
 
 	log.Printf("gRPC server listening on %s", cfg.GRPC.Address)
 	if err := s.Serve(lis); err != nil {
